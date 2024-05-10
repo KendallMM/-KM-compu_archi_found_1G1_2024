@@ -1,0 +1,37 @@
+module SPI_slave(
+	input logic MOSI, SS, sclk, rst,
+	output logic MISO, output reg [3:0] Bits,output resetBits,output [6:0]res,output [6:0]res2, output pwm_out
+);
+	
+	logic d;
+	
+	assign d = MOSI & SS &~rst;
+	
+	assign resetBits=rst;
+	assign MISO= rst == 1 ? 255:d;
+	
+	//Bits
+	flipflop_D  ff_led0(
+		.d(d), .clk(sclk), .rst(rst),
+		.q(Bits[0])
+	);
+	
+	flipflop_D  ff_led1(
+		.d(Bits[0]), .clk(sclk), .rst(rst),
+		.q(Bits[1])
+	);
+	
+	flipflop_D  ff_led2(
+		.d(Bits[1]), .clk(sclk), .rst(rst),
+		.q(Bits[2])
+	);
+	
+	flipflop_D  ff_led3(
+		.d(Bits[2]), .clk(sclk), .rst(rst),
+		.q(Bits[3])
+	);
+	
+	circuitoLogico cl(.A(Bits[3]), .B(Bits[2]), .C(Bits[1]), .D(Bits[0]), .res(res), .res2(res2));
+	pwm motor (.dutyMultiplier(Bits), .clk(sclk), .rst(rst), .pwm_out(pwm_out) );
+	
+endmodule
