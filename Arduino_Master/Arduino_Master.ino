@@ -12,7 +12,7 @@ void setup() {
 }
 void loop() {
     if(handshakeStatus){
-      int resp=0;
+      int response=0;
       SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
       for(int num1=0;num1<16;num1++){
         Serial.print("Enviando dato: ");
@@ -29,7 +29,7 @@ void loop() {
               SPIconnection=false;
               break;
             }
-            if(resp>15){
+            if(response>15){
               Serial.print(i+1);
               Serial.print("...");
             }else{
@@ -60,6 +60,7 @@ void handshake(){
   int i=0;
   while (i<3){
     handshakeResponse=SPI.transfer(5);
+    Serial.println(handshakeResponse);
     if(handshakeResponse==0&& i==2){
       Serial.println("Handshake realizado con éxito");
       handshakeStatus=true;
