@@ -1,0 +1,243 @@
+|SPI_slave
+MOSI => d.IN0
+SS => d.IN1
+sclk => sclk.IN9
+rst => rst.IN8
+MISO << MISO.DB_MAX_OUTPUT_PORT_TYPE
+num1[0] << num1[0].DB_MAX_OUTPUT_PORT_TYPE
+num1[1] << num1[1].DB_MAX_OUTPUT_PORT_TYPE
+num1[2] << num1[2].DB_MAX_OUTPUT_PORT_TYPE
+num1[3] << num1[3].DB_MAX_OUTPUT_PORT_TYPE
+num2[0] << num2[0].DB_MAX_OUTPUT_PORT_TYPE
+num2[1] << num2[1].DB_MAX_OUTPUT_PORT_TYPE
+num2[2] << num2[2].DB_MAX_OUTPUT_PORT_TYPE
+num2[3] << num2[3].DB_MAX_OUTPUT_PORT_TYPE
+suma[0] << Add0.DB_MAX_OUTPUT_PORT_TYPE
+suma[1] << Add0.DB_MAX_OUTPUT_PORT_TYPE
+suma[2] << Add0.DB_MAX_OUTPUT_PORT_TYPE
+suma[3] << Add0.DB_MAX_OUTPUT_PORT_TYPE
+suma[4] << Add0.DB_MAX_OUTPUT_PORT_TYPE
+suma[5] << <GND>
+suma[6] << <GND>
+suma[7] << <GND>
+resetBits << rst.DB_MAX_OUTPUT_PORT_TYPE
+display[0] << sieteSegmentos:op1.display
+display[1] << sieteSegmentos:op1.display
+display[2] << sieteSegmentos:op1.display
+display[3] << sieteSegmentos:op1.display
+display[4] << sieteSegmentos:op1.display
+display[5] << sieteSegmentos:op1.display
+display[6] << sieteSegmentos:op1.display
+display2[0] << sieteSegmentos:op1.display2
+display2[1] << sieteSegmentos:op1.display2
+display2[2] << sieteSegmentos:op1.display2
+display2[3] << sieteSegmentos:op1.display2
+display2[4] << sieteSegmentos:op1.display2
+display2[5] << sieteSegmentos:op1.display2
+display2[6] << sieteSegmentos:op1.display2
+display3[0] << sieteSegmentos:op2.display
+display3[1] << sieteSegmentos:op2.display
+display3[2] << sieteSegmentos:op2.display
+display3[3] << sieteSegmentos:op2.display
+display3[4] << sieteSegmentos:op2.display
+display3[5] << sieteSegmentos:op2.display
+display3[6] << sieteSegmentos:op2.display
+display4[0] << sieteSegmentos:op2.display2
+display4[1] << sieteSegmentos:op2.display2
+display4[2] << sieteSegmentos:op2.display2
+display4[3] << sieteSegmentos:op2.display2
+display4[4] << sieteSegmentos:op2.display2
+display4[5] << sieteSegmentos:op2.display2
+display4[6] << sieteSegmentos:op2.display2
+pwm_out << pwm:motor.pwm
+
+
+|SPI_slave|flipflop_SD:ff_num1bit0
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num1bit1
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num1bit2
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num1bit3
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num2bit0
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num2bit1
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num2bit2
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|flipflop_SD:ff_num2bit3
+d => q~0.DATAIN
+clk => q~0.CLK
+rst => q~0.PRESET
+q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|sieteSegmentos:op1
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display2.IN1
+B => display.IN0
+B => display.IN1
+B => display.IN0
+B => display.IN1
+B => display.IN1
+B => display.IN0
+B => display.IN1
+B => display.IN1
+B => display.IN0
+B => display.IN0
+B => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN0
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+display[0] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[1] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[2] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[3] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[4] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[5] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[6] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display2[0] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[1] <= <GND>
+display2[2] <= <GND>
+display2[3] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[4] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[5] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[6] <= <VCC>
+
+
+|SPI_slave|sieteSegmentos:op2
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display.IN0
+A => display2.IN1
+B => display.IN0
+B => display.IN1
+B => display.IN0
+B => display.IN1
+B => display.IN1
+B => display.IN0
+B => display.IN1
+B => display.IN1
+B => display.IN0
+B => display.IN0
+B => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN1
+C => display.IN0
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+D => display.IN1
+display[0] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[1] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[2] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[3] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[4] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[5] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display[6] <= display.DB_MAX_OUTPUT_PORT_TYPE
+display2[0] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[1] <= <GND>
+display2[2] <= <GND>
+display2[3] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[4] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[5] <= display2.DB_MAX_OUTPUT_PORT_TYPE
+display2[6] <= <VCC>
+
+
+|SPI_slave|pwm:motor
+Porcentaje[0] => LessThan0.IN4
+Porcentaje[1] => LessThan0.IN3
+Porcentaje[2] => LessThan0.IN2
+Porcentaje[3] => LessThan0.IN1
+SLK => counter[0].CLK
+SLK => counter[1].CLK
+SLK => counter[2].CLK
+SLK => counter[3].CLK
+SLK => pwm~reg0.CLK
+pwm <= pwm~reg0.DB_MAX_OUTPUT_PORT_TYPE
+
+
