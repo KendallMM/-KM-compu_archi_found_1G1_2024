@@ -1,24 +1,33 @@
 #include <SPI.h>
+const int switchPins[] = {2, 3, 4, 5, 6, 7, 8, 9};
+const int numSwitches = sizeof(switchPins) / sizeof(switchPins[0]);
+int switchStates = 0;
 bool handshakeStatus;
 bool SPIconnection=true;
 void setup() {
+    for (int i = 0; i < numSwitches; i++) {
+    pinMode(switchPins[i], INPUT);
+    }
     Serial.begin(9600);
     SPI.begin();
-    SPI.setClockDivider(SPI_CLOCK_DIV2);
-    Serial.println("ENVIANDO HANDSHAKE");
+    Serial.println("ENVIANDO HANDSHAKE");    
     //digitalWrite(SS, LOW);
     handshake();
     SPIconnection=true;
 }
 void loop() {
+    switchStates = 0;
     if(handshakeStatus){
+        for (int i = 0; i < numSwitches; i++) {
+        switchStates |= digitalRead(switchPins[i]) << i;
+      }
       int response=0;
-      SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+      SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
       for(int num1=0;num1<16;num1++){
-        Serial.print("Enviando dato: ");
-        Serial.println(num1);
-        response=SPI.transfer(num1);      
-        if(response>15){
+        Serial.print("Enviando datos: ");
+        Serial.println(switchStates);
+        response=SPI.transfer(switchStates);
+        if(response>switchStates){
           Serial.println("No se recibio respuesta");
           for(int i=0;i<3;i++){
             response=SPI.transfer(num1);
@@ -35,7 +44,6 @@ void loop() {
             }else{
               break;
             }
-            delay(1000);
           }
         }else{
           Serial.println(response);
@@ -44,10 +52,8 @@ void loop() {
           SPI.endTransaction();
         // Esperar 1.5 segundos        
         }else{
-          delay(5000);
           abort();
         }
-        delay(1000);
       }
     }    
 }
@@ -60,7 +66,6 @@ void handshake(){
   int i=0;
   while (i<3){
     handshakeResponse=SPI.transfer(5);
-    Serial.println(handshakeResponse);
     if(handshakeResponse==0&& i==2){
       Serial.println("Handshake realizado con éxito");
       handshakeStatus=true;
@@ -75,6 +80,5 @@ void handshake(){
       handshakeStatus=false;
       break;  
     }
-    delay(1000);
   }
 }
