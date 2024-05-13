@@ -40,27 +40,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "suma[0]",
+					"name" : "operacion[0]",
 					"strict" : false
 				},
 				{
-					"name" : "suma[1]",
-					"strict" : false
-				},
-				{
-					"name" : "suma[2]",
-					"strict" : false
-				},
-				{
-					"name" : "suma[3]",
-					"strict" : false
-				},
-				{
-					"name" : "suma[4]",
-					"strict" : false
-				},
-				{
-					"name" : "resetBits",
+					"name" : "operacion[1]",
 					"strict" : false
 				},
 				{

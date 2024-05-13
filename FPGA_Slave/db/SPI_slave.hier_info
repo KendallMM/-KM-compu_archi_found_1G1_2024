@@ -1,9 +1,25 @@
 |SPI_slave
 MOSI => d.IN0
+MOSI => num1[0]~reg0.DATAIN
 SS => d.IN1
-sclk => sclk.IN9
-rst => rst.IN8
+sclk => sclk.IN1
+rst => MISO.OUTPUTSELECT
+rst => operacion[0]~reg0.ACLR
+rst => operacion[1]~reg0.ACLR
+rst => num2[0]~reg0.ACLR
+rst => num2[1]~reg0.ACLR
+rst => num2[2]~reg0.ACLR
+rst => num2[3]~reg0.ACLR
+rst => num1[0]~reg0.ACLR
+rst => num1[1]~reg0.ACLR
+rst => num1[2]~reg0.ACLR
+rst => num1[3]~reg0.ACLR
+rst => d.IN1
 MISO << MISO.DB_MAX_OUTPUT_PORT_TYPE
+n << ALU:aluOp.N
+z << ALU:aluOp.Z
+c << ALU:aluOp.C
+v << ALU:aluOp.V
 num1[0] << num1[0].DB_MAX_OUTPUT_PORT_TYPE
 num1[1] << num1[1].DB_MAX_OUTPUT_PORT_TYPE
 num1[2] << num1[2].DB_MAX_OUTPUT_PORT_TYPE
@@ -12,103 +28,48 @@ num2[0] << num2[0].DB_MAX_OUTPUT_PORT_TYPE
 num2[1] << num2[1].DB_MAX_OUTPUT_PORT_TYPE
 num2[2] << num2[2].DB_MAX_OUTPUT_PORT_TYPE
 num2[3] << num2[3].DB_MAX_OUTPUT_PORT_TYPE
-suma[0] << Add0.DB_MAX_OUTPUT_PORT_TYPE
-suma[1] << Add0.DB_MAX_OUTPUT_PORT_TYPE
-suma[2] << Add0.DB_MAX_OUTPUT_PORT_TYPE
-suma[3] << Add0.DB_MAX_OUTPUT_PORT_TYPE
-suma[4] << Add0.DB_MAX_OUTPUT_PORT_TYPE
-suma[5] << <GND>
-suma[6] << <GND>
-suma[7] << <GND>
-resetBits << rst.DB_MAX_OUTPUT_PORT_TYPE
-display[0] << sieteSegmentos:op1.display
-display[1] << sieteSegmentos:op1.display
-display[2] << sieteSegmentos:op1.display
-display[3] << sieteSegmentos:op1.display
-display[4] << sieteSegmentos:op1.display
-display[5] << sieteSegmentos:op1.display
-display[6] << sieteSegmentos:op1.display
-display2[0] << sieteSegmentos:op1.display2
-display2[1] << sieteSegmentos:op1.display2
-display2[2] << sieteSegmentos:op1.display2
-display2[3] << sieteSegmentos:op1.display2
-display2[4] << sieteSegmentos:op1.display2
-display2[5] << sieteSegmentos:op1.display2
-display2[6] << sieteSegmentos:op1.display2
-display3[0] << sieteSegmentos:op2.display
-display3[1] << sieteSegmentos:op2.display
-display3[2] << sieteSegmentos:op2.display
-display3[3] << sieteSegmentos:op2.display
-display3[4] << sieteSegmentos:op2.display
-display3[5] << sieteSegmentos:op2.display
-display3[6] << sieteSegmentos:op2.display
-display4[0] << sieteSegmentos:op2.display2
-display4[1] << sieteSegmentos:op2.display2
-display4[2] << sieteSegmentos:op2.display2
-display4[3] << sieteSegmentos:op2.display2
-display4[4] << sieteSegmentos:op2.display2
-display4[5] << sieteSegmentos:op2.display2
-display4[6] << sieteSegmentos:op2.display2
+operacion[0] << operacion[0].DB_MAX_OUTPUT_PORT_TYPE
+operacion[1] << operacion[1].DB_MAX_OUTPUT_PORT_TYPE
+resultado[0] << ALU:aluOp.result
+resultado[1] << ALU:aluOp.result
+resultado[2] << ALU:aluOp.result
+resultado[3] << ALU:aluOp.result
+resultado[4] << ALU:aluOp.result
+resultado[5] << ALU:aluOp.result
+resultado[6] << ALU:aluOp.result
+resultado[7] << ALU:aluOp.result
+display[0] << sieteSegmentos:operando1.display
+display[1] << sieteSegmentos:operando1.display
+display[2] << sieteSegmentos:operando1.display
+display[3] << sieteSegmentos:operando1.display
+display[4] << sieteSegmentos:operando1.display
+display[5] << sieteSegmentos:operando1.display
+display[6] << sieteSegmentos:operando1.display
+display2[0] << sieteSegmentos:operando1.display2
+display2[1] << sieteSegmentos:operando1.display2
+display2[2] << sieteSegmentos:operando1.display2
+display2[3] << sieteSegmentos:operando1.display2
+display2[4] << sieteSegmentos:operando1.display2
+display2[5] << sieteSegmentos:operando1.display2
+display2[6] << sieteSegmentos:operando1.display2
+display3[0] << sieteSegmentos:operando2.display
+display3[1] << sieteSegmentos:operando2.display
+display3[2] << sieteSegmentos:operando2.display
+display3[3] << sieteSegmentos:operando2.display
+display3[4] << sieteSegmentos:operando2.display
+display3[5] << sieteSegmentos:operando2.display
+display3[6] << sieteSegmentos:operando2.display
+display4[0] << sieteSegmentos:operando2.display2
+display4[1] << sieteSegmentos:operando2.display2
+display4[2] << sieteSegmentos:operando2.display2
+display4[3] << sieteSegmentos:operando2.display2
+display4[4] << sieteSegmentos:operando2.display2
+display4[5] << sieteSegmentos:operando2.display2
+display4[6] << sieteSegmentos:operando2.display2
 pwm_out << pwm:motor.pwm
 
 
-|SPI_slave|flipflop_SD:ff_num1bit0
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num1bit1
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num1bit2
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num1bit3
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num2bit0
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num2bit1
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num2bit2
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|flipflop_SD:ff_num2bit3
-d => q~0.DATAIN
-clk => q~0.CLK
-rst => q~0.PRESET
-q <= q~0.DB_MAX_OUTPUT_PORT_TYPE
-
-
-|SPI_slave|sieteSegmentos:op1
+|SPI_slave|sieteSegmentos:operando1
 A => display.IN0
 A => display.IN0
 A => display.IN0
@@ -168,7 +129,7 @@ display2[5] <= display2.DB_MAX_OUTPUT_PORT_TYPE
 display2[6] <= <VCC>
 
 
-|SPI_slave|sieteSegmentos:op2
+|SPI_slave|sieteSegmentos:operando2
 A => display.IN0
 A => display.IN0
 A => display.IN0
@@ -229,15 +190,139 @@ display2[6] <= <VCC>
 
 
 |SPI_slave|pwm:motor
-Porcentaje[0] => LessThan0.IN4
-Porcentaje[1] => LessThan0.IN3
-Porcentaje[2] => LessThan0.IN2
-Porcentaje[3] => LessThan0.IN1
+Velocidad[0] => LessThan0.IN4
+Velocidad[1] => LessThan0.IN3
+Velocidad[2] => LessThan0.IN2
+Velocidad[3] => LessThan0.IN1
 SLK => counter[0].CLK
 SLK => counter[1].CLK
 SLK => counter[2].CLK
 SLK => counter[3].CLK
 SLK => pwm~reg0.CLK
 pwm <= pwm~reg0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|ALU:aluOp
+A[0] => A[0].IN2
+A[1] => A[1].IN2
+A[2] => A[2].IN2
+A[3] => A[3].IN2
+B[0] => B[0].IN2
+B[1] => B[1].IN2
+B[2] => B[2].IN2
+B[3] => B[3].IN2
+opcode[0] => Equal0.IN1
+opcode[0] => Equal1.IN0
+opcode[0] => Equal2.IN1
+opcode[0] => Equal3.IN1
+opcode[1] => Equal0.IN0
+opcode[1] => Equal1.IN1
+opcode[1] => Equal2.IN0
+opcode[1] => Equal3.IN0
+result[0] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[1] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[2] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[3] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[4] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[5] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[6] <= result.DB_MAX_OUTPUT_PORT_TYPE
+result[7] <= result.DB_MAX_OUTPUT_PORT_TYPE
+N <= N.DB_MAX_OUTPUT_PORT_TYPE
+Z <= Equal4.DB_MAX_OUTPUT_PORT_TYPE
+C <= C.DB_MAX_OUTPUT_PORT_TYPE
+V <= V.DB_MAX_OUTPUT_PORT_TYPE
+seg1[0] <= <GND>
+seg1[1] <= <GND>
+seg1[2] <= <GND>
+seg1[3] <= <GND>
+seg1[4] <= <GND>
+seg1[5] <= <GND>
+seg1[6] <= <GND>
+seg2[0] <= <GND>
+seg2[1] <= <GND>
+seg2[2] <= <GND>
+seg2[3] <= <GND>
+seg2[4] <= <GND>
+seg2[5] <= <GND>
+seg2[6] <= <GND>
+
+
+|SPI_slave|ALU:aluOp|Adder:adder
+num1[0] => sum.IN0
+num1[0] => tempCarry.IN0
+num1[1] => sum.IN0
+num1[1] => tempCarry.IN0
+num1[1] => tempCarry.IN1
+num1[2] => sum.IN0
+num1[2] => tempCarry.IN0
+num1[2] => tempCarry.IN1
+num1[3] => sum.IN0
+num1[3] => tempCarry.IN0
+num1[3] => tempCarry.IN1
+num2[0] => sum.IN1
+num2[0] => tempCarry.IN1
+num2[1] => sum.IN1
+num2[1] => tempCarry.IN1
+num2[1] => tempCarry.IN1
+num2[2] => sum.IN1
+num2[2] => tempCarry.IN1
+num2[2] => tempCarry.IN1
+num2[3] => sum.IN1
+num2[3] => tempCarry.IN1
+num2[3] => tempCarry.IN1
+sum[0] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+sum[1] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+sum[2] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+sum[3] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+cout <= tempCarry.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|ALU:aluOp|Subtractor:subtractor
+minuendo[0] => minuendo[0].IN1
+minuendo[1] => minuendo[1].IN1
+minuendo[2] => minuendo[2].IN1
+minuendo[3] => minuendo[3].IN1
+sustraendo[0] => LessThan0.IN8
+sustraendo[0] => Add0.IN8
+sustraendo[1] => LessThan0.IN7
+sustraendo[1] => Add0.IN7
+sustraendo[2] => LessThan0.IN6
+sustraendo[2] => Add0.IN6
+sustraendo[3] => LessThan0.IN5
+sustraendo[3] => Add0.IN5
+diferencia[0] <= diferencia.DB_MAX_OUTPUT_PORT_TYPE
+diferencia[1] <= diferencia.DB_MAX_OUTPUT_PORT_TYPE
+diferencia[2] <= diferencia.DB_MAX_OUTPUT_PORT_TYPE
+diferencia[3] <= diferencia.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|SPI_slave|ALU:aluOp|Subtractor:subtractor|Adder:restAdder
+num1[0] => sum.IN0
+num1[0] => tempCarry.IN0
+num1[1] => sum.IN0
+num1[1] => tempCarry.IN0
+num1[1] => tempCarry.IN1
+num1[2] => sum.IN0
+num1[2] => tempCarry.IN0
+num1[2] => tempCarry.IN1
+num1[3] => sum.IN0
+num1[3] => tempCarry.IN0
+num1[3] => tempCarry.IN1
+num2[0] => sum.IN1
+num2[0] => tempCarry.IN1
+num2[1] => sum.IN1
+num2[1] => tempCarry.IN1
+num2[1] => tempCarry.IN1
+num2[2] => sum.IN1
+num2[2] => tempCarry.IN1
+num2[2] => tempCarry.IN1
+num2[3] => sum.IN1
+num2[3] => tempCarry.IN1
+num2[3] => tempCarry.IN1
+sum[0] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+sum[1] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+sum[2] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+sum[3] <= sum.DB_MAX_OUTPUT_PORT_TYPE
+cout <= tempCarry.DB_MAX_OUTPUT_PORT_TYPE
 
 
