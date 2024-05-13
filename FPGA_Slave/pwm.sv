@@ -1,4 +1,4 @@
-module pwm (input [3:0] Porcentaje,
+module pwm (input [3:0] Velocidad,
 	input SLK,
    output reg pwm
    
@@ -15,8 +15,7 @@ end
 
 	always @ (posedge SLK) begin
 		
-		
-		pwm <= Porcentaje >= counter ;
+		pwm <= Velocidad >= counter ;
 		
 		counter <= counter + 1;
       

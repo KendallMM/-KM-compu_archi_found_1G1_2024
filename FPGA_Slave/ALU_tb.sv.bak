@@ -1,0 +1,72 @@
+`timescale 1ns / 1ps
+
+module ALU_tb;
+
+// Parameters
+parameter CLK_PERIOD = 10; // Clock period in ns
+
+// Inputs
+reg [3:0] A, B;
+reg [1:0] opcode;
+reg clk;
+
+// Outputs
+wire [7:0] result;
+wire N, Z, C, V;
+
+// Instantiate the ALU module
+ALU uut (
+    .A(A),
+    .B(B),
+    .opcode(opcode),
+    .result(result),
+    .N(N),
+    .Z(Z),
+    .C(C),
+    .V(V)
+);
+
+// Clock generation
+always #((CLK_PERIOD / 2)) clk = ~clk;
+
+// Test stimulus
+initial begin
+    // Reset
+    A <= 4'b0000;
+    B <= 4'b0000;
+    opcode <= 2'b00;
+    #20;
+
+    // Test addition
+    A <= 4'b0010;
+    B <= 4'b0011;
+    opcode <= 2'b00;
+    #20;
+
+    // Test subtraction
+    A <= 4'b1010;
+    B <= 4'b0011;
+    opcode <= 2'b01;
+    #20;
+
+    // Test bitwise AND
+    A <= 4'b1010;
+    B <= 4'b0011;
+    opcode <= 2'b10;
+    #20;
+
+    // Test bitwise OR
+    A <= 4'b1010;
+    B <= 4'b0011;
+    opcode <= 2'b11;
+    #20;
+
+    $stop; // Stop simulation
+end
+
+// Display output flags and result
+always @(posedge clk) begin
+    $display("Result: %h, N: %b, Z: %b, C: %b, V: %b", result, N, Z, C, V);
+end
+
+endmodule

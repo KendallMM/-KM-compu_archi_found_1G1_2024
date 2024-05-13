@@ -18,6 +18,5 @@ module Subtractor #(parameter N = 4)(
         .sum(temp_sum),
         .cout(cout)
     );
-
-     assign diferencia = (minuendo > sustraendo) ? temp_sum[N-1:0] : (~temp_sum[N-1:0] + 1);
+	 assign diferencia=(minuendo>sustraendo)?temp_sum[N-1:0]:(~temp_sum[N-1:0]+1);
 endmodule

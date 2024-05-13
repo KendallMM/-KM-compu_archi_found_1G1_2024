@@ -1,15 +1,15 @@
 module ALU #(parameter WIDTH = 4) (
     input logic [WIDTH - 1:0] A, B,
     input logic [1:0] opcode,
-    output logic [WIDTH - 1:0] result,
+    output logic [WIDTH*2 - 1:0] result,
     output logic N, Z, C, V,
     output logic [6:0]seg1, seg2
 );
 
-logic [WIDTH-1:0] addResult;
-logic [WIDTH-1:0] subResult;
-logic [WIDTH-1:0] andResult;
-logic [WIDTH-1:0] orResult;
+logic [WIDTH*2-1:0] addResult;
+logic [WIDTH*2-1:0] subResult;
+logic [WIDTH*2-1:0] andResult;
+logic [WIDTH*2-1:0] orResult;
 
 Adder #(WIDTH) adder(
     .num1(A), 

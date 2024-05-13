@@ -8,11 +8,13 @@ vmap work rtl_work
 vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/SPI_slave.sv}
 vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/sieteSegmentos.sv}
 vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/pwm.sv}
-vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/flipflop_SD.sv}
+vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/Subtractor.sv}
+vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/Adder.sv}
+vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/ALU.sv}
 
-vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/pwm_tb.sv}
+vlog -sv -work work +incdir+F:/FPGA/ProyectoGrupal1/FPGA_Slave {F:/FPGA/ProyectoGrupal1/FPGA_Slave/ALU_tb.sv}
 
-vsim -t 1ps -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L cyclonev_ver -L cyclonev_hssi_ver -L cyclonev_pcie_hip_ver -L rtl_work -L work -voptargs="+acc"  pwm_tb
+vsim -t 1ps -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L cyclonev_ver -L cyclonev_hssi_ver -L cyclonev_pcie_hip_ver -L rtl_work -L work -voptargs="+acc"  ALU_tb
 
 add wave *
 view structure
