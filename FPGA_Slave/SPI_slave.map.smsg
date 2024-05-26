@@ -1,1 +1,0 @@
-Warning (10268): Verilog HDL information at pwm.sv(16): always construct contains both blocking and non-blocking assignments File: F:/FPGA/ProyectoGrupal1/FPGA_Slave/pwm.sv Line: 16
