@@ -40,6 +40,11 @@ class CPU:
             self.ALUOut = self.A + self.IR.imm
         elif self.IR.opcode == 'JUMP':
             self.ALUOut = self.PC + self.IR.imm
+        elif self.IR.opcode == 'BEQ':
+            if self.A == self.B:
+                self.ALUOut = self.PC + self.IR.imm
+            else:
+                self.ALUOut = self.PC
 
     def memory_access(self):
         if self.IR.opcode == 'LOAD':
@@ -53,6 +58,8 @@ class CPU:
         elif self.IR.opcode == 'LOAD':
             self.registers[self.IR.rt] = self.MDR
         elif self.IR.opcode == 'JUMP':
+            self.PC = self.ALUOut
+        elif self.IR.opcode == 'BEQ':
             self.PC = self.ALUOut
 
     def run_cycle(self):
@@ -95,7 +102,11 @@ instructions = [
 (Instruction('ADD', rs=2, rt=3, rd=4)),
 (Instruction('STORE', rs=4, rt=5, imm=10)),
 (Instruction('SUB', rs=4, rt=2, rd=1)),
-(Instruction('JUMP', imm=1)),
+(Instruction('BEQ', rs=1, rt=1, imm=2)),  # BEQ si rs == rt, salta 2 instrucciones adelante
+(Instruction('ADD', rs=0, rt=0, rd=0)),   # Instrucción de relleno (no ejecutada si BEQ es exitoso)
+(Instruction('JUMP', imm=2)),
+(Instruction('ADD', rs=3, rt=5, rd=8)),
+(Instruction('SUB', rs=5, rt=3, rd=7)),
 ]
 
 # Establecer registros iniciales para la prueba
@@ -106,10 +117,17 @@ cpu.registers[5] = 30  # R5
 # Establecer valores en memoria para la carga
 cpu.memory[15] = 100  # Valor en la dirección 10 + 5
 
-# Ejecuta las instrucciones en la CPU
-for instr in instructions:
-    cpu.memory[cpu.PC] = instr
-    cpu.run_cycle()
+# Cargar las instrucciones en memoria
+for i, instr in enumerate(instructions):
+    cpu.memory[i] = instr
+
+# Ejecutar las instrucciones en la CPU
+while cpu.PC-1 < len(instructions):
+    while cpu.state != 'FETCH' or cpu.PC == 0:
+        cpu.run_cycle()
+    cpu.run_cycle()  # Ejecutar el ciclo FETCH para la próxima instrucción
+    print(f"PC: {cpu.PC}")
+    print(f"len(instructions): {len(instructions)}")
 
 
 # Mostrar el estado de los registros y memoria después de la ejecución
