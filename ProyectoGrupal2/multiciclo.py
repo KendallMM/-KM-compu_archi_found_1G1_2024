@@ -45,6 +45,23 @@ class CPU:
                 self.ALUOut = self.PC + self.IR.imm
             else:
                 self.ALUOut = self.PC
+        elif self.IR.opcode == 'AND':
+            self.ALUOut = self.A & self.B
+        elif self.IR.opcode == 'OR':
+            self.ALUOut = self.A | self.B
+        elif self.IR.opcode == 'XOR':
+            self.ALUOut = self.A ^ self.B
+        elif self.IR.opcode == 'SLT':
+            self.ALUOut = 1 if self.A < self.B else 0
+        elif self.IR.opcode == 'ADDI':
+            self.ALUOut = self.A + self.IR.imm
+        elif self.IR.opcode == 'SUBI':
+            self.ALUOut = self.A - self.IR.imm
+        elif self.IR.opcode == 'BNE':
+            if self.A != self.B:
+                self.ALUOut = self.PC + self.IR.imm
+            else:
+                self.ALUOut = self.PC
 
     def memory_access(self):
         if self.IR.opcode == 'LOAD':
@@ -53,13 +70,19 @@ class CPU:
             self.memory[self.ALUOut] = self.B
 
     def write_back(self):
-        if self.IR.opcode in ['ADD', 'SUB']:
+        if self.IR.opcode in ['ADD', 'SUB','AND', 'OR', 'XOR', 'SLT']:
             self.registers[self.IR.rd] = self.ALUOut
         elif self.IR.opcode == 'LOAD':
             self.registers[self.IR.rt] = self.MDR
         elif self.IR.opcode == 'JUMP':
             self.PC = self.ALUOut
         elif self.IR.opcode == 'BEQ':
+            self.PC = self.ALUOut
+        elif self.IR.opcode == 'ADDI':
+            self.registers[self.IR.rt] = self.ALUOut
+        elif self.IR.opcode == 'SUBI':
+            self.registers[self.IR.rt] = self.ALUOut
+        elif self.IR.opcode == 'BNE':
             self.PC = self.ALUOut
 
     def run_cycle(self):
@@ -104,9 +127,14 @@ instructions = [
 (Instruction('SUB', rs=4, rt=2, rd=1)),
 (Instruction('BEQ', rs=1, rt=1, imm=2)),  # BEQ si rs == rt, salta 2 instrucciones adelante
 (Instruction('ADD', rs=0, rt=0, rd=0)),   # Instrucción de relleno (no ejecutada si BEQ es exitoso)
-(Instruction('JUMP', imm=2)),
-(Instruction('ADD', rs=3, rt=5, rd=8)),
-(Instruction('SUB', rs=5, rt=3, rd=7)),
+(Instruction('JUMP', imm=1)),
+(Instruction('AND', rs=2, rt=3, rd=7)),   # AND entre R2 y R3, resultado en R7
+(Instruction('OR', rs=2, rt=3, rd=8)),    # OR entre R2 y R3, resultado en R8
+(Instruction('XOR', rs=2, rt=3, rd=9)),   # XOR entre R2 y R3, resultado en R9
+(Instruction('SLT', rs=2, rt=3, rd=10)),   # SLT entre R2 y R3, resultado en R10
+(Instruction('ADDI', rs=2, rt=11, imm=10)), # ADDI suma 10 a R2 y almacena en R11
+(Instruction('SUBI', rs=2, rt=12, imm=5)),  # SUBI resta 5 de R2 y almacena en R12
+(Instruction('BNE', rs=1, rt=2, imm=2)), 
 ]
 
 # Establecer registros iniciales para la prueba
@@ -127,7 +155,7 @@ while cpu.PC-1 < len(instructions):
         cpu.run_cycle()
     cpu.run_cycle()  # Ejecutar el ciclo FETCH para la próxima instrucción
     print(f"PC: {cpu.PC}")
-    print(f"len(instructions): {len(instructions)}")
+    # print(f"len(instructions): {len(instructions)}")
 
 
 # Mostrar el estado de los registros y memoria después de la ejecución
