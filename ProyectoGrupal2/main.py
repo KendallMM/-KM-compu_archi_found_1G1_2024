@@ -1,4 +1,5 @@
 import sys
+from multiciclo import *
 import time
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QComboBox, QTextEdit, QLabel, QTableWidget, \
     QTableWidgetItem
@@ -59,7 +60,7 @@ class ProcessorSimulatorApp(QWidget):
             self.processor.step()
         elif processor_type == "Multiciclo":
             if not self.processor:
-                self.processor = MulticicloProcessor()
+                self.processor = MultiCycleCPU(0)
             self.processor.step()
         elif "Segmentado" in processor_type:
             if not self.processor:
@@ -76,8 +77,8 @@ class ProcessorSimulatorApp(QWidget):
             self.processor.run()
         elif processor_type == "Multiciclo":
             if not self.processor:
-                self.processor = MulticicloProcessor()
-            self.processor.run()
+                self.processor = MultiCycleCPU(0.3)
+            self.processor.execute()
         elif "Segmentado" in processor_type:
             if not self.processor:
                 self.processor = SegmentadoProcessor()
@@ -94,9 +95,9 @@ class ProcessorSimulatorApp(QWidget):
         # Actualizar el estado del procesador en el área de texto
         if self.processor:
             elapsed_time = time.time() - self.processor.start_time if self.processor.start_time else 0
-            status = f"PC: {self.processor.PC}\nRegisters: {self.processor.registers}\nMemory: {self.processor.memory[:10]}"  # Mostrar solo las primeras 10 posiciones de memoria
-            status += f"\nCycles: {self.processor.cycle_count}\nExecution Time: {elapsed_time:.2f}s"
-            if isinstance(self.processor, MulticicloProcessor):
+            status = f"PC: {self.processor.PC}\nRegisters: {self.processor.registers}\nMemory: {self.processor.data_memory}"
+            status += f"\nCycles: {self.processor.PC}\nExecution Time: {elapsed_time:.2f}s"
+            if isinstance(self.processor, MultiCycleCPU):
                 status += f"\nFSM State: {self.processor.state}"
             elif isinstance(self.processor, SegmentadoProcessor):
                 pipeline_status = "\nPipeline:"
@@ -112,11 +113,11 @@ class ProcessorSimulatorApp(QWidget):
         row_count = self.history_table.rowCount()
         self.history_table.insertRow(row_count)
         self.history_table.setItem(row_count, 0, QTableWidgetItem(processor_type))
-        self.history_table.setItem(row_count, 1, QTableWidgetItem(str(self.processor.cycle_count)))
+        self.history_table.setItem(row_count, 1, QTableWidgetItem(str(self.processor.PC)))
         self.history_table.setItem(row_count, 2, QTableWidgetItem(f"{time.time() - self.processor.start_time:.2f}s"))
 
         self.execution_history.append(
-            (processor_type, self.processor.cycle_count, time.time() - self.processor.start_time))
+            (processor_type, self.processor.PC, time.time() - self.processor.start_time))
         if len(self.execution_history) > 5:
             self.execution_history.pop(0)
             self.history_table.removeRow(0)
@@ -126,3 +127,5 @@ if __name__ == '__main__':
     ex = ProcessorSimulatorApp()
     ex.show()
     sys.exit(app.exec_())
+
+
