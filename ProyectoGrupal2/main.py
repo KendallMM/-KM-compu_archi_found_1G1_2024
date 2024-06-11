@@ -7,7 +7,210 @@ from PyQt5.QtGui import QPixmap
 from multiciclo import MultiCycleCPU
 import time
 
+from uniciclo import UniCycleCPU
+
 class CPUWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("CPU Simulator")
+        self.setFixedSize(600, 400)
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout()
+        self.central_widget.setLayout(layout)
+
+        # Botón para seleccionar el tipo de interfaz
+        self.interface_button = QPushButton("Interfaz de Uniciclo")
+        self.interface_button.clicked.connect(self.show_cpu_simulation)
+        layout.addWidget(self.interface_button)
+
+        # Botón para cambiar a la interfaz de multiciclo
+        self.multiciclo_button = QPushButton("Interfaz de Multiciclo")
+        self.multiciclo_button.clicked.connect(self.show_multiciclo_interface)
+        layout.addWidget(self.multiciclo_button)
+
+        self.cpu_window = None
+        self.multiciclo_window = None
+
+    def show_cpu_simulation(self):
+        if self.cpu_window is None:
+            self.cpu_window = CPUSimulationWindow()
+        self.cpu_window.show()
+
+    def show_multiciclo_interface(self):
+        if self.multiciclo_window is None:
+            self.multiciclo_window = MulticicloWindow()
+        self.multiciclo_window.show()
+
+class CPUSimulationWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("UniCycle CPU Simulator")
+        self.setFixedSize(800, 600)
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout()
+        self.central_widget.setLayout(layout)
+
+        # SpinBox para seleccionar el delay en milisegundos
+        delay_layout = QHBoxLayout()
+        self.delay_label = QLabel("Delay (ms):")
+        delay_layout.addWidget(self.delay_label)
+        self.delay_spinbox = QSpinBox(self)
+        self.delay_spinbox.setRange(0, 1000)  # Rango de 0 a 1 segundo
+        self.delay_spinbox.setValue(100)  # Valor por defecto: 100 ms
+        delay_layout.addWidget(self.delay_spinbox)
+        layout.addLayout(delay_layout)
+
+        # Botones para controlar la ejecución
+        self.start_button = QPushButton("Start Simulation")
+        self.start_button.clicked.connect(self.start_simulation)
+        layout.addWidget(self.start_button)
+
+        self.stop_button = QPushButton("Stop Simulation")
+        self.stop_button.clicked.connect(self.stop_simulation)
+        self.stop_button.setEnabled(False)
+        layout.addWidget(self.stop_button)
+
+        # Botón para Step-by-Step Execution
+        self.step_button = QPushButton("Step-by-Step Execution")
+        self.step_button.clicked.connect(self.run_step)
+        layout.addWidget(self.step_button)
+
+        # Botón para regresar
+        self.return_button = QPushButton("Return")
+        self.return_button.clicked.connect(self.return_to_main)
+        layout.addWidget(self.return_button)
+
+        # Crear y agregar etiquetas para cada área de texto
+        self.label_fetched = QLabel("Fetched", self)
+        layout.addWidget(self.label_fetched)
+        self.fetched_text = QTextEdit(self)
+        self.fetched_text.setReadOnly(True)
+        layout.addWidget(self.fetched_text)
+
+        self.label_decoded = QLabel("Decoded", self)
+        layout.addWidget(self.label_decoded)
+        self.decoded_text = QTextEdit(self)
+        self.decoded_text.setReadOnly(True)
+        layout.addWidget(self.decoded_text)
+
+        self.label_executed = QLabel("Executed", self)
+        layout.addWidget(self.label_executed)
+        self.executed_text = QTextEdit(self)
+        self.executed_text.setReadOnly(True)
+        layout.addWidget(self.executed_text)
+
+        self.label_memory_access = QLabel("Memory Access", self)
+        layout.addWidget(self.label_memory_access)
+        self.memory_access_text = QTextEdit(self)
+        self.memory_access_text.setReadOnly(True)
+        layout.addWidget(self.memory_access_text)
+
+        self.label_write_back = QLabel("Write Back", self)
+        layout.addWidget(self.label_write_back)
+        self.write_back_text = QTextEdit(self)
+        self.write_back_text.setReadOnly(True)
+        layout.addWidget(self.write_back_text)
+
+        # Text area for messages
+        self.messages_text = QTextEdit(self)
+        self.messages_text.setReadOnly(True)
+        layout.addWidget(self.messages_text)
+
+        # Text area for execution time
+        self.execution_time_label = QLabel("Execution Time (s):", self)
+        layout.addWidget(self.execution_time_label)
+        self.execution_time_text = QTextEdit(self)
+        self.execution_time_text.setReadOnly(True)
+        layout.addWidget(self.execution_time_text)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.run_cycle)
+        self.cpu = None
+        self.start_time = None
+
+    def start_simulation(self):
+        processor_type = "Uniciclo"
+        cycle_time = self.delay_spinbox.value() / 1000.0  # Convert to seconds
+        self.cpu = UniCycleCPU(cycle_time)
+
+        self.cpu.messageChanged.connect(self.update_messages)
+        self.reset()
+        self.timer.start(self.delay_spinbox.value())
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+        self.start_time = time.time()
+
+    def stop_simulation(self):
+        self.timer.stop()
+        self.start_button.setEnabled(True)
+        self.stop_button.setEnabled(False)
+        self.update_execution_time()
+
+    def run_cycle(self):
+        if not self.cpu.run_cycle():
+            self.stop_simulation()
+            return
+        self.update_ui()
+
+    def run_step(self):
+        if not self.cpu.run_cycle():
+            self.step_button.setEnabled(False)
+        self.update_ui()
+
+    def reset(self):
+        if self.cpu:
+            self.cpu.reset()
+            self.update_ui()
+
+    def update_ui(self):
+        self.messages_text.append(f"PC: {self.cpu.PC}")
+        self.update_execution_time()
+
+    def update_messages(self, message):
+        # Dividir el mensaje en partes
+        parts = message.split(': ')
+
+        if len(parts) == 2:
+            category, content = parts[0], parts[1]
+
+            # Limpiar la caja de texto correspondiente
+            if category == 'Fetched':
+                self.fetched_text.clear()
+            elif category == 'Decoded':
+                self.decoded_text.clear()
+            elif category == 'Executed':
+                self.executed_text.clear()
+            elif category == 'Memory Access':
+                self.memory_access_text.clear()
+            elif category == 'Write Back':
+                self.write_back_text.clear()
+
+            # Actualizar la caja de texto correspondiente
+            if category == 'Fetched':
+                self.fetched_text.append(content)
+            elif category == 'Decoded':
+                self.decoded_text.append(content)
+            elif category == 'Executed':
+                self.executed_text.append(content)
+            elif category == 'Memory Access':
+                self.memory_access_text.append(content)
+            elif category == 'Write Back':
+                self.write_back_text.append(content)
+
+    def update_execution_time(self):
+        if self.start_time:
+            elapsed_time = time.time() - self.start_time
+            self.execution_time_text.setPlainText(f"{elapsed_time:.2f}")
+
+    def return_to_main(self):
+        # Cerrar la ventana actual y mostrar la ventana principal
+        self.close()
+
+class MulticicloWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MultiCycle CPU Simulator")
@@ -18,10 +221,9 @@ class CPUWindow(QMainWindow):
         layout = QVBoxLayout()
         self.central_widget.setLayout(layout)
 
-        # ComboBox para seleccionar el tipo de procesador
-        self.processor_combo = QComboBox(self)
-        self.processor_combo.addItems(["Select Processor", "Multiciclo"])
-        layout.addWidget(self.processor_combo)
+        self.return_button = QPushButton("Regresar")
+        self.return_button.clicked.connect(self.close_and_return)
+        layout.addWidget(self.return_button)
 
         # SpinBox para seleccionar el delay en centisegundos
         delay_layout = QHBoxLayout()
@@ -120,7 +322,7 @@ class CPUWindow(QMainWindow):
         self.history_table.setHorizontalHeaderLabels(["Processor", "Cycles", "Execution Time"])
         text_area_layout.addWidget(self.history_table, 4, 0, 1, 0)
         self.history_table.setFixedWidth(486)
-        self.history_table.setFixedHeight(175) 
+        self.history_table.setFixedHeight(175)
 
         self.cpu = MultiCycleCPU()
         self.cpu.messageChanged.connect(self.update_output)
@@ -136,12 +338,15 @@ class CPUWindow(QMainWindow):
         self.cpu.reset()
         delay = self.delay_spinbox.value()
         self.timer.start(delay * 10)  # centisegundos
-        
+
     def stop_simulation(self):
         self.start_button.setEnabled(True)
         self.stop_button.setEnabled(False)
         self.step_button.setEnabled(True)
         self.timer.stop()
+
+    def close_and_return(self):
+        self.close()
 
     def run_cycle(self):
         if not self.cpu.run_cycle():
@@ -179,13 +384,13 @@ class CPUWindow(QMainWindow):
         self.memory_text.setPlainText(f"Memory: {self.cpu.data_memory[:data_memory_size]}")
         self.fsm_text.setPlainText(f"FSM State: {self.cpu.state}")
         self.image_label.setPixmap(QPixmap(f"ProyectoGrupal2\\FSM_STATES\\{self.cpu.state}.png"))
-        
+
         # Prevent auto-scroll up
         self.prevent_auto_scroll(self.pc_text)
         self.prevent_auto_scroll(self.registers_text)
         self.prevent_auto_scroll(self.memory_text)
         self.prevent_auto_scroll(self.fsm_text)
-        
+
         self.log_execution("Multiciclo")
 
     def prevent_auto_scroll(self, text_edit):
