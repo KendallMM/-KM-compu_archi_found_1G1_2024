@@ -1,7 +1,9 @@
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QLabel, QWidget, QComboBox, QTextEdit, QTableWidget, \
-    QTableWidgetItem, QHBoxLayout, QSpinBox
-from PyQt5.QtCore import QTimer
+    QTableWidgetItem, QHBoxLayout, QSpinBox, QMessageBox, QGridLayout, QSizePolicy
+from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QPixmap
 from multiciclo import MultiCycleCPU
 import time
 
@@ -9,7 +11,7 @@ class CPUWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MultiCycle CPU Simulator")
-        self.setGeometry(100, 100, 800, 600)
+        self.setFixedSize(780, 715)
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -60,38 +62,65 @@ class CPUWindow(QMainWindow):
         layout.addWidget(self.reset_button)
 
         # Layout for text areas
-        text_area_layout = QHBoxLayout()
+        text_area_layout = QGridLayout()
         layout.addLayout(text_area_layout)
 
-        # Text areas for different types of outputs
+        # Program Counter
         self.pc_label = QLabel("Program Counter:")
-        text_area_layout.addWidget(self.pc_label)
+        text_area_layout.addWidget(self.pc_label, 0, 0)
         self.pc_text = QTextEdit(self)
         self.pc_text.setReadOnly(True)
-        text_area_layout.addWidget(self.pc_text)
+        self.pc_text.setFixedWidth(240)
+        self.pc_text.setFixedHeight(50)  # Adjust the height as needed
+        text_area_layout.addWidget(self.pc_text, 1, 0)
 
-        self.registers_label = QLabel("Registers:")
-        text_area_layout.addWidget(self.registers_label)
-        self.registers_text = QTextEdit(self)
-        self.registers_text.setReadOnly(True)
-        text_area_layout.addWidget(self.registers_text)
-
-        self.memory_label = QLabel("Memory:")
-        text_area_layout.addWidget(self.memory_label)
-        self.memory_text = QTextEdit(self)
-        self.memory_text.setReadOnly(True)
-        text_area_layout.addWidget(self.memory_text)
-
+        # FSM State
         self.fsm_label = QLabel("FSM State:")
-        text_area_layout.addWidget(self.fsm_label)
+        text_area_layout.addWidget(self.fsm_label, 0, 1)
         self.fsm_text = QTextEdit(self)
         self.fsm_text.setReadOnly(True)
-        text_area_layout.addWidget(self.fsm_text)
+        self.fsm_text.setFixedWidth(240)
+        self.fsm_text.setFixedHeight(50)  # Adjust the height as needed
+        text_area_layout.addWidget(self.fsm_text, 1, 1)
+
+        # Memory and Registers
+        self.memory_label = QLabel("Memory:")
+        text_area_layout.addWidget(self.memory_label, 2, 0)
+        self.memory_text = QTextEdit(self)
+        self.memory_text.setReadOnly(True)
+        self.memory_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        text_area_layout.addWidget(self.memory_text, 3, 0)
+        self.memory_text.setFixedWidth(240)  # Adjust the height as needed
+
+        self.registers_label = QLabel("Registers:")
+        text_area_layout.addWidget(self.registers_label, 2, 1)
+        self.registers_text = QTextEdit(self)
+        self.registers_text.setReadOnly(True)
+        self.registers_text.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        text_area_layout.addWidget(self.registers_text, 3, 1)
+        self.registers_text.setFixedWidth(240)
+
+        # Image
+        self.image_label = QLabel(self)
+        self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        text_area_layout.addWidget(self.image_label, 0, 2, 0, 3)
+
+        # Add image next to FSM state box
+        image_path = "ProyectoGrupal2\\FSM_STATES\\MAQUINA.png"  # Replace with your image path
+
+        if os.path.exists(image_path):
+            self.image_label.setPixmap(QPixmap(image_path))
+        else:
+            QMessageBox.critical(self, "Error", f"Image file not found: {image_path}")
+            # Optionally, set a default image or handle the missing file case
+            self.image_label.setText("Image not found")
 
         # Tabla para mostrar el historial de ejecuciones
         self.history_table = QTableWidget(0, 3)
         self.history_table.setHorizontalHeaderLabels(["Processor", "Cycles", "Execution Time"])
-        layout.addWidget(self.history_table)
+        text_area_layout.addWidget(self.history_table, 4, 0, 1, 0)
+        self.history_table.setFixedWidth(486)
+        self.history_table.setFixedHeight(175) 
 
         self.cpu = MultiCycleCPU()
         self.cpu.messageChanged.connect(self.update_output)
@@ -149,7 +178,8 @@ class CPUWindow(QMainWindow):
         data_memory_size = self.data_spinbox.value()
         self.memory_text.setPlainText(f"Memory: {self.cpu.data_memory[:data_memory_size]}")
         self.fsm_text.setPlainText(f"FSM State: {self.cpu.state}")
-
+        self.image_label.setPixmap(QPixmap(f"ProyectoGrupal2\\FSM_STATES\\{self.cpu.state}.png"))
+        
         # Prevent auto-scroll up
         self.prevent_auto_scroll(self.pc_text)
         self.prevent_auto_scroll(self.registers_text)
@@ -182,4 +212,3 @@ if __name__ == '__main__':
     window = CPUWindow()
     window.show()
     sys.exit(app.exec_())
-
