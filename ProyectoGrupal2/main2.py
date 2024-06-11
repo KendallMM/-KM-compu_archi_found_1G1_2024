@@ -1,0 +1,185 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QLabel, QWidget, QComboBox, QTextEdit, QTableWidget, \
+    QTableWidgetItem, QHBoxLayout, QSpinBox
+from PyQt5.QtCore import QTimer
+from multiciclo import MultiCycleCPU
+import time
+
+class CPUWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("MultiCycle CPU Simulator")
+        self.setGeometry(100, 100, 800, 600)
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout()
+        self.central_widget.setLayout(layout)
+
+        # ComboBox para seleccionar el tipo de procesador
+        self.processor_combo = QComboBox(self)
+        self.processor_combo.addItems(["Select Processor", "Multiciclo"])
+        layout.addWidget(self.processor_combo)
+
+        # SpinBox para seleccionar el delay en centisegundos
+        delay_layout = QHBoxLayout()
+        self.delay_label = QLabel("Delay (ms):")
+        delay_layout.addWidget(self.delay_label)
+        self.delay_spinbox = QSpinBox(self)
+        self.delay_spinbox.setRange(0, 100)  # Rango de 0 a 1 segundo en centisegundos
+        self.delay_spinbox.setValue(30)  # Valor por defecto: 0.1 segundo (10 centisegundos)
+        delay_layout.addWidget(self.delay_spinbox)
+        layout.addLayout(delay_layout)
+
+        # SpinBox para seleccionar la cantidad de datos a mostrar de self.cpu.data_memory
+        data_layout = QHBoxLayout()
+        self.data_label = QLabel("Data Memory Size:")
+        data_layout.addWidget(self.data_label)
+        self.data_spinbox = QSpinBox(self)
+        self.data_spinbox.setRange(0, 1024)  # Rango de 0 a 1024 (tamaño máximo de la memoria de datos)
+        self.data_spinbox.setValue(27)  # Valor por defecto: 10 datos
+        data_layout.addWidget(self.data_spinbox)
+        layout.addLayout(data_layout)
+
+        # Botones para controlar la ejecución
+        self.start_button = QPushButton("Start Simulation")
+        self.start_button.clicked.connect(self.start_simulation)
+        layout.addWidget(self.start_button)
+
+        self.stop_button = QPushButton("Stop Simulation")
+        self.stop_button.clicked.connect(self.stop_simulation)
+        self.stop_button.setEnabled(False)
+        layout.addWidget(self.stop_button)
+
+        self.step_button = QPushButton("Step-by-Step Execution")
+        self.step_button.clicked.connect(self.run_step)
+        layout.addWidget(self.step_button)
+
+        self.reset_button = QPushButton("Reset")
+        self.reset_button.clicked.connect(self.reset)
+        layout.addWidget(self.reset_button)
+
+        # Layout for text areas
+        text_area_layout = QHBoxLayout()
+        layout.addLayout(text_area_layout)
+
+        # Text areas for different types of outputs
+        self.pc_label = QLabel("Program Counter:")
+        text_area_layout.addWidget(self.pc_label)
+        self.pc_text = QTextEdit(self)
+        self.pc_text.setReadOnly(True)
+        text_area_layout.addWidget(self.pc_text)
+
+        self.registers_label = QLabel("Registers:")
+        text_area_layout.addWidget(self.registers_label)
+        self.registers_text = QTextEdit(self)
+        self.registers_text.setReadOnly(True)
+        text_area_layout.addWidget(self.registers_text)
+
+        self.memory_label = QLabel("Memory:")
+        text_area_layout.addWidget(self.memory_label)
+        self.memory_text = QTextEdit(self)
+        self.memory_text.setReadOnly(True)
+        text_area_layout.addWidget(self.memory_text)
+
+        self.fsm_label = QLabel("FSM State:")
+        text_area_layout.addWidget(self.fsm_label)
+        self.fsm_text = QTextEdit(self)
+        self.fsm_text.setReadOnly(True)
+        text_area_layout.addWidget(self.fsm_text)
+
+        # Tabla para mostrar el historial de ejecuciones
+        self.history_table = QTableWidget(0, 3)
+        self.history_table.setHorizontalHeaderLabels(["Processor", "Cycles", "Execution Time"])
+        layout.addWidget(self.history_table)
+
+        self.cpu = MultiCycleCPU()
+        self.cpu.messageChanged.connect(self.update_output)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.run_cycle)
+
+        self.execution_history = []  # Historial de ejecuciones
+
+    def start_simulation(self):
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+        self.step_button.setEnabled(False)
+        self.cpu.reset()
+        delay = self.delay_spinbox.value()
+        self.timer.start(delay * 10)  # centisegundos
+        
+    def stop_simulation(self):
+        self.start_button.setEnabled(True)
+        self.stop_button.setEnabled(False)
+        self.step_button.setEnabled(True)
+        self.timer.stop()
+
+    def run_cycle(self):
+        if not self.cpu.run_cycle():
+            self.stop_simulation()
+        self.update_status()
+
+    def run_step(self):
+        if not self.cpu.run_cycle():
+            self.step_button.setEnabled(False)
+        self.update_status()
+
+    def reset(self):
+        if self.start_button.isEnabled():
+            self.step_button.setEnabled(True)
+        self.cpu.reset()
+        self.update_status()
+
+    def update_output(self, message):
+        self.pc_text.append(message)
+        self.registers_text.append(message)
+        self.memory_text.append(message)
+        self.fsm_text.append(message)
+
+        # Prevent auto-scroll up
+        self.prevent_auto_scroll(self.pc_text)
+        self.prevent_auto_scroll(self.registers_text)
+        self.prevent_auto_scroll(self.memory_text)
+        self.prevent_auto_scroll(self.fsm_text)
+
+    def update_status(self):
+        elapsed_time = time.time() - self.cpu.start_time if self.cpu.start_time else 0
+        self.pc_text.setPlainText(f"PC: {self.cpu.PC}")
+        self.registers_text.setPlainText(f"Registers: {self.cpu.registers}")
+        data_memory_size = self.data_spinbox.value()
+        self.memory_text.setPlainText(f"Memory: {self.cpu.data_memory[:data_memory_size]}")
+        self.fsm_text.setPlainText(f"FSM State: {self.cpu.state}")
+
+        # Prevent auto-scroll up
+        self.prevent_auto_scroll(self.pc_text)
+        self.prevent_auto_scroll(self.registers_text)
+        self.prevent_auto_scroll(self.memory_text)
+        self.prevent_auto_scroll(self.fsm_text)
+        
+        self.log_execution("Multiciclo")
+
+    def prevent_auto_scroll(self, text_edit):
+        cursor = text_edit.textCursor()
+        cursor.movePosition(cursor.End)
+        text_edit.setTextCursor(cursor)
+        text_edit.ensureCursorVisible()
+
+    def log_execution(self, processor_type):
+        row_count = self.history_table.rowCount()
+        self.history_table.insertRow(row_count)
+        self.history_table.setItem(row_count, 0, QTableWidgetItem(processor_type))
+        self.history_table.setItem(row_count, 1, QTableWidgetItem(str(self.cpu.PC)))
+        self.history_table.setItem(row_count, 2, QTableWidgetItem(f"{time.time() - self.cpu.start_time:.2f}s"))
+
+        self.execution_history.append(
+            (processor_type, self.cpu.PC, time.time() - self.cpu.start_time))
+        if len(self.execution_history) > 5:
+            self.execution_history.pop(0)
+            self.history_table.removeRow(0)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = CPUWindow()
+    window.show()
+    sys.exit(app.exec_())
+
