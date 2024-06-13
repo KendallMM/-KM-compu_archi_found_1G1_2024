@@ -9,6 +9,13 @@ class Instruction:
     def __repr__(self):
         return f"Instruction(opcode='{self.opcode}', rs={self.rs}, rt={self.rt}, rd={self.rd}, imm={self.imm})"
 
+    def __str__(self):
+        if self.opcode == 'LOAD' or self.opcode == 'STORE':
+            return f"{self.opcode} R{self.rt}, {self.imm}(R{self.rs})"
+        elif self.opcode == 'ADD' or self.opcode == 'MUL':
+            return f"{self.opcode} R{self.rd}, R{self.rs}, R{self.rt}"
+        else:
+            return f"{self.opcode} R{self.rs}, R{self.rt}, R{self.rd}, {self.imm}"
 class Memory:
     def __init__(self):
         self.combined_memory = [
