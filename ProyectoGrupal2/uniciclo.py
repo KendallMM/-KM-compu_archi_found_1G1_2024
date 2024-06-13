@@ -5,9 +5,8 @@ from PyQt5.QtCore import QThread, pyqtSignal
 class UniCycleCPU(QThread):
     messageChanged = pyqtSignal(str)
 
-    def __init__(self, cycleTime=1):
+    def __init__(self):
         super().__init__()
-        self.cycleTime = cycleTime  # Time taken by each cycle in seconds
         self.reset()
 
     def reset(self):
@@ -24,6 +23,8 @@ class UniCycleCPU(QThread):
         self.B = 0  # Register B
         self.ALUOut = 0  # ALU output
         self.MDR = 0  # Memory data register
+        self.Cycles = 0  # Number of cycles
+        self.CPI = "..."  # Cycles per instruction
         self.instruction_count = self.separate_memory()  # Separate memory and get instruction count
 
     def fetch_decode_execute(self):
@@ -87,7 +88,9 @@ class UniCycleCPU(QThread):
         self.messageChanged.emit(f"Write Back: Registers = {self.registers}")
 
     def run_cycle(self):
+        self.Cycles += 1
         if self.PC >= self.instruction_count:
+            self.CPI = self.Cycles / self.instruction_count
             return False
         self.fetch_decode_execute()
         return True

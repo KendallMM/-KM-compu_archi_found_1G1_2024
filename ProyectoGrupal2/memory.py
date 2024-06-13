@@ -16,7 +16,6 @@ class Instruction:
             return f"{self.opcode} R{self.rd}, R{self.rs}, R{self.rt}"
         else:
             return f"{self.opcode} R{self.rs}, R{self.rt}, R{self.rd}, {self.imm}"
-
 class Memory:
     def __init__(self):
         self.combined_memory = [
