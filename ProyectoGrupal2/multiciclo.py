@@ -2,13 +2,11 @@ import time
 from memory import *
 from PyQt5.QtCore import QThread, pyqtSignal
 
-
 class MultiCycleCPU(QThread):
     messageChanged = pyqtSignal(str)
 
-    def __init__(self, cycleTime=1):
+    def __init__(self):
         super().__init__()
-        self.cycleTime = cycleTime  # Time taken by each cycle in seconds
         self.reset()
 
     def reset(self):
@@ -19,13 +17,14 @@ class MultiCycleCPU(QThread):
         combined_memory = Memory().combined_memory
         self.memory[:len(combined_memory)] = combined_memory  # Load combined memory into the CPU memory
         self.data_memory = [0] * 1024  # Data memory
-        self.prevPC = 0
         self.PC = 0  # Program counter
         self.IR = None  # Instruction register
         self.A = 0  # Register A
         self.B = 0  # Register B
         self.ALUOut = 0  # ALU output
         self.MDR = 0  # Memory data register
+        self.Cycles = 0  # Number of cycles
+        self.CPI = "..."  # Cycles per instruction
         self.state = 'FETCH'  # Initial FSM state
         self.instruction_count = self.separate_memory()  # Separate memory and get instruction count
 
@@ -89,12 +88,12 @@ class MultiCycleCPU(QThread):
         self.messageChanged.emit(f"Write Back: Registers = {self.registers}")
 
     def run_cycle(self):
-        if self.PC - 1 >= self.instruction_count:
+        self.Cycles += 1
+        if self.PC >= self.instruction_count:
+            self.CPI = self.Cycles / self.instruction_count
             return False
-        if self.prevPC != self.PC:
-            self.messageChanged.emit(f"Cycle: PC = {self.PC}, Registers = {self.registers}")
-            self.messageChanged.emit(f"Executed Instruction: {self.IR}")
-            self.prevPC = self.PC
+        self.messageChanged.emit(f"Cycle: PC = {self.PC}, Registers = {self.registers}")
+        self.messageChanged.emit(f"Executed Instruction: {self.IR}")
         if self.state == 'FETCH':
             self.fetch_instruction()
             self.state = 'DECODE'
@@ -110,6 +109,7 @@ class MultiCycleCPU(QThread):
         elif self.state == 'WRITE_BACK':
             self.write_back()
             self.state = 'FETCH'
+        self.messageChanged.emit(f"Cycles: {self.Cycles}")
         return True
 
     def separate_memory(self):
