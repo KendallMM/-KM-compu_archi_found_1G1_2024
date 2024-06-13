@@ -175,6 +175,12 @@ class PipelineWindow(QMainWindow):
         self.update_ui()
 
     def run_step(self):
+        cycle_time = self.delay_spinbox.value() / 1000.0
+        if not self.cpu:
+            self.cpu = SegmentedPipelineCPU(cycle_time)
+            self.start_time = time.time()
+        self.cpu.messageChanged.connect(self.update_messages)
+        self.cpu.pipelineStateChanged.connect(self.update_pipeline_state)
         # Ejecuta un ciclo del pipeline paso a paso
         if not self.cpu.isRunning():
             self.cpu.run_cycle()
@@ -230,8 +236,6 @@ class PipelineWindow(QMainWindow):
     def return_to_main(self):
         # Cierra la ventana y regresa a la interfaz principal
         self.close()
-
-
 
 
 class GenWindow(QMainWindow):
@@ -374,6 +378,7 @@ class GenWindow(QMainWindow):
         self.cpu.reset()
         delay = self.delay_spinbox.value()
         self.timer.start(delay)  # centisegundos
+
         
     def stop_simulation(self):
         self.start_button.setEnabled(True)
