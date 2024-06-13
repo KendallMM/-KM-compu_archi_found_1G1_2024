@@ -2,8 +2,7 @@ import time
 from memory import *
 from PyQt5.QtCore import QThread, pyqtSignal
 
-
-class MultiCycleCPU(QThread):
+class UniCycleCPU(QThread):
     messageChanged = pyqtSignal(str)
 
     def __init__(self, cycleTime=1):
@@ -19,27 +18,26 @@ class MultiCycleCPU(QThread):
         combined_memory = Memory().combined_memory
         self.memory[:len(combined_memory)] = combined_memory  # Load combined memory into the CPU memory
         self.data_memory = [0] * 1024  # Data memory
-        self.prevPC = 0
         self.PC = 0  # Program counter
         self.IR = None  # Instruction register
         self.A = 0  # Register A
         self.B = 0  # Register B
         self.ALUOut = 0  # ALU output
         self.MDR = 0  # Memory data register
-        self.state = 'FETCH'  # Initial FSM state
         self.instruction_count = self.separate_memory()  # Separate memory and get instruction count
 
-    def fetch_instruction(self):
+    def fetch_decode_execute(self):
+        # Fetch
         self.IR = self.instruction_memory[self.PC]
         self.PC += 1
         self.messageChanged.emit(f"Fetched: {self.IR}")
 
-    def decode_instruction(self):
+        # Decode
         self.A = self.registers[self.IR.rs]
         self.B = self.registers[self.IR.rt]
         self.messageChanged.emit(f"Decoded: A = {self.A}, B = {self.B}")
 
-    def execute_instruction(self):
+        # Execute
         if self.IR.opcode == 'ADD':
             self.ALUOut = self.A + self.B
         elif self.IR.opcode == 'SUB':
@@ -70,14 +68,14 @@ class MultiCycleCPU(QThread):
             self.ALUOut = self.PC + self.IR.imm if self.A != self.B else self.PC
         self.messageChanged.emit(f"Executed: ALUOut = {self.ALUOut}")
 
-    def memory_access(self):
+        # Memory Access
         if self.IR.opcode == 'LOAD':
             self.MDR = self.data_memory[self.ALUOut]
         elif self.IR.opcode == 'STORE':
             self.data_memory[self.ALUOut] = self.B
         self.messageChanged.emit(f"Memory Access: MDR = {self.MDR}")
 
-    def write_back(self):
+        # Write Back
         if self.IR.opcode in ['ADD', 'SUB', 'AND', 'OR', 'XOR', 'SLT', 'MUL']:
             self.registers[self.IR.rd] = self.ALUOut
         elif self.IR.opcode == 'LOAD':
@@ -89,27 +87,9 @@ class MultiCycleCPU(QThread):
         self.messageChanged.emit(f"Write Back: Registers = {self.registers}")
 
     def run_cycle(self):
-        if self.PC - 1 >= self.instruction_count:
+        if self.PC >= self.instruction_count:
             return False
-        if self.prevPC != self.PC:
-            self.messageChanged.emit(f"Cycle: PC = {self.PC}, Registers = {self.registers}")
-            self.messageChanged.emit(f"Executed Instruction: {self.IR}")
-            self.prevPC = self.PC
-        if self.state == 'FETCH':
-            self.fetch_instruction()
-            self.state = 'DECODE'
-        elif self.state == 'DECODE':
-            self.decode_instruction()
-            self.state = 'EXECUTE'
-        elif self.state == 'EXECUTE':
-            self.execute_instruction()
-            self.state = 'MEMORY_ACCESS' if self.IR.opcode in ['LOAD', 'STORE'] else 'WRITE_BACK'
-        elif self.state == 'MEMORY_ACCESS':
-            self.memory_access()
-            self.state = 'WRITE_BACK'
-        elif self.state == 'WRITE_BACK':
-            self.write_back()
-            self.state = 'FETCH'
+        self.fetch_decode_execute()
         return True
 
     def separate_memory(self):
@@ -123,4 +103,3 @@ class MultiCycleCPU(QThread):
         for j in range(instruction_count, len(self.memory)):
             self.data_memory[j - instruction_count] = self.memory[j]
         return instruction_count
-
