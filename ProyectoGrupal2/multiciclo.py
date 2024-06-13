@@ -2,11 +2,13 @@ import time
 from memory import *
 from PyQt5.QtCore import QThread, pyqtSignal
 
+
 class MultiCycleCPU(QThread):
     messageChanged = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
+
         self.reset()
 
     def reset(self):
@@ -25,6 +27,7 @@ class MultiCycleCPU(QThread):
         self.MDR = 0  # Memory data register
         self.Cycles = 0  # Number of cycles
         self.CPI = "..."  # Cycles per instruction
+
         self.state = 'FETCH'  # Initial FSM state
         self.instruction_count = self.separate_memory()  # Separate memory and get instruction count
 
@@ -94,6 +97,7 @@ class MultiCycleCPU(QThread):
             return False
         self.messageChanged.emit(f"Cycle: PC = {self.PC}, Registers = {self.registers}")
         self.messageChanged.emit(f"Executed Instruction: {self.IR}")
+
         if self.state == 'FETCH':
             self.fetch_instruction()
             self.state = 'DECODE'
@@ -110,6 +114,7 @@ class MultiCycleCPU(QThread):
             self.write_back()
             self.state = 'FETCH'
         self.messageChanged.emit(f"Cycles: {self.Cycles}")
+
         return True
 
     def separate_memory(self):

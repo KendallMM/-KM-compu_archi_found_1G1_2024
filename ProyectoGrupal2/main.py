@@ -2,11 +2,15 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QLabel, QWidget, QComboBox, QTextEdit, QTableWidget, \
     QTableWidgetItem, QHBoxLayout, QSpinBox, QMessageBox, QGridLayout, QSizePolicy
-from PyQt5.QtCore import QTimer
+
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
 from multiciclo import MultiCycleCPU
-from uniciclo import UniCycleCPU
 import time
+
+from pipeline import SegmentedPipelineCPU
+from uniciclo import UniCycleCPU
+
 
 class CPUWindow(QMainWindow):
     def __init__(self):
@@ -25,7 +29,6 @@ class CPUWindow(QMainWindow):
         self.processor_combo = QComboBox(self)
         self.processor_combo.addItems(["Multiciclo", "Uniciclo"])
         layout.addWidget(self.processor_combo)
-
         # SpinBox para seleccionar el delay en centisegundos
         delay_layout = QHBoxLayout()
         self.delay_label = QLabel("Delay (ms):")
@@ -50,7 +53,6 @@ class CPUWindow(QMainWindow):
         self.start_button = QPushButton("Start Simulation")
         self.start_button.clicked.connect(self.start_simulation)
         layout.addWidget(self.start_button)
-
         self.stop_button = QPushButton("Stop Simulation")
         self.stop_button.clicked.connect(self.stop_simulation)
         self.stop_button.setEnabled(False)
@@ -60,6 +62,192 @@ class CPUWindow(QMainWindow):
         self.step_button.clicked.connect(self.run_step)
         layout.addWidget(self.step_button)
 
+class PipelineWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Pipeline CPU Simulator")  # Título de la ventana
+        self.setFixedSize(1200, 600)  # Tamaño fijo de la ventana
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        main_layout = QHBoxLayout()
+        self.central_widget.setLayout(main_layout)
+
+        # Sección izquierda
+        left_layout = QVBoxLayout()
+
+        # Delay en milisegundos
+        delay_layout = QHBoxLayout()
+        self.delay_label = QLabel("Delay (ms):")
+        delay_layout.addWidget(self.delay_label)
+        self.delay_spinbox = QSpinBox(self)  # Cuadro para ajustar el delay
+        self.delay_spinbox.setRange(0, 1000)
+        self.delay_spinbox.setValue(100)
+        delay_layout.addWidget(self.delay_spinbox)
+        left_layout.addLayout(delay_layout)
+
+        # Botones de control
+        self.start_button = QPushButton("Start Simulation")  # Botón para iniciar la simulación
+        self.start_button.clicked.connect(self.start_simulation)
+        left_layout.addWidget(self.start_button)
+
+        self.stop_button = QPushButton("Stop Simulation")  # Botón para detener la simulación
+        self.stop_button.clicked.connect(self.stop_simulation)
+        self.stop_button.setEnabled(False)
+        left_layout.addWidget(self.stop_button)
+
+        self.step_button = QPushButton("Step-by-Step Execution")  # Botón para ejecución paso a paso
+        self.step_button.clicked.connect(self.run_step)
+        left_layout.addWidget(self.step_button)
+
+        self.return_button = QPushButton("Return")  # Botón para volver
+        self.return_button.clicked.connect(self.return_to_main)
+        left_layout.addWidget(self.return_button)
+
+        # Etiquetas y áreas de texto para mostrar información del pipeline
+        self.label_fetched = QLabel("Fetched", self)
+        left_layout.addWidget(self.label_fetched)
+        self.fetched_text = QTextEdit(self)
+        self.fetched_text.setReadOnly(True)
+        left_layout.addWidget(self.fetched_text)
+
+        self.label_decoded = QLabel("Decoded", self)
+        left_layout.addWidget(self.label_decoded)
+        self.decoded_text = QTextEdit(self)
+        self.decoded_text.setReadOnly(True)
+        left_layout.addWidget(self.decoded_text)
+
+        self.label_executed = QLabel("Executed", self)
+        left_layout.addWidget(self.label_executed)
+        self.executed_text = QTextEdit(self)
+        self.executed_text.setReadOnly(True)
+        left_layout.addWidget(self.executed_text)
+
+        self.label_memory_access = QLabel("Memory Access", self)
+        left_layout.addWidget(self.label_memory_access)
+        self.memory_access_text = QTextEdit(self)
+        self.memory_access_text.setReadOnly(True)
+        left_layout.addWidget(self.memory_access_text)
+
+        self.label_write_back = QLabel("Write Back", self)
+        left_layout.addWidget(self.label_write_back)
+        self.write_back_text = QTextEdit(self)
+        self.write_back_text.setReadOnly(True)
+        left_layout.addWidget(self.write_back_text)
+
+        self.messages_text = QTextEdit(self)
+        self.messages_text.setReadOnly(True)
+        left_layout.addWidget(self.messages_text)
+
+        self.execution_time_label = QLabel("Execution Time (s):", self)
+        left_layout.addWidget(self.execution_time_label)
+        self.execution_time_text = QTextEdit(self)
+        self.execution_time_text.setReadOnly(True)
+        left_layout.addWidget(self.execution_time_text)
+
+        # Sección derecha
+        right_layout = QVBoxLayout()
+
+        self.label_pipeline_state = QLabel("Pipeline State", self)
+        right_layout.addWidget(self.label_pipeline_state)
+        self.pipeline_state_text = QTextEdit(self)
+        self.pipeline_state_text.setReadOnly(True)
+        self.pipeline_state_text.setFixedWidth(400)
+        right_layout.addWidget(self.pipeline_state_text)
+
+        main_layout.addLayout(left_layout)
+        main_layout.addLayout(right_layout)
+
+        # Temporizador para ejecutar ciclos del pipeline
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.run_cycle)
+        self.cpu = None
+        self.start_time = None
+
+    def start_simulation(self):
+        # Inicia la simulación con el tiempo de ciclo especificado
+        cycle_time = self.delay_spinbox.value() / 1000.0
+        self.cpu = SegmentedPipelineCPU(cycle_time)
+
+        self.cpu.messageChanged.connect(self.update_messages)
+        self.cpu.pipelineStateChanged.connect(self.update_pipeline_state)
+        self.reset()
+        self.cpu.start()
+        self.timer.start(self.delay_spinbox.value())
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+        self.start_time = time.time()
+
+    def stop_simulation(self):
+        # Detiene la simulación
+        if self.cpu.isRunning():
+            self.cpu.terminate()
+            self.cpu.wait()
+        self.timer.stop()
+        self.start_button.setEnabled(True)
+        self.stop_button.setEnabled(False)
+        self.update_execution_time()
+
+    def run_cycle(self):
+        # Ejecuta un ciclo del pipeline
+        self.update_ui()
+
+    def run_step(self):
+        # Ejecuta un ciclo del pipeline paso a paso
+        if not self.cpu.isRunning():
+            self.cpu.run_cycle()
+        self.update_ui()
+
+    def reset(self):
+        # Resetea el estado de la CPU y la interfaz
+        if self.cpu:
+            self.cpu.reset()
+            self.update_ui()
+
+    def update_ui(self):
+        # Actualiza la interfaz de usuario
+        self.messages_text.append(f"PC: {self.cpu.PC}")
+        self.update_execution_time()
+
+    def update_messages(self, message):
+        # Actualiza los mensajes mostrados en la interfaz
+        parts = message.split(': ', 1)
+
+        if len(parts) == 2:
+            category, content = parts[0], parts[1]
+
+            if category == 'Fetched':
+                self.fetched_text.clear()
+                self.fetched_text.append(content)
+            elif category == 'Decoded':
+                self.decoded_text.clear()
+                self.decoded_text.append(content)
+            elif category == 'Executed':
+                self.executed_text.clear()
+                self.executed_text.append(content)
+            elif category == 'Memory Access':
+                self.memory_access_text.clear()
+                self.memory_access_text.append(content)
+            elif category == 'Write Back':
+                self.write_back_text.clear()
+                self.write_back_text.append(content)
+
+    def update_pipeline_state(self, pipeline_state):
+        # Actualiza el estado del pipeline mostrado en la interfaz
+        self.pipeline_state_text.clear()
+        stages = ['Fetch', 'Decode', 'Execute', 'Memory Access', 'Write Back']
+        for stage, instruction in zip(stages, pipeline_state):
+            self.pipeline_state_text.append(f"{stage}: {instruction}")
+
+    def update_execution_time(self):
+        # Actualiza el tiempo de ejecución mostrado en la interfaz
+        if self.start_time:
+            elapsed_time = time.time() - self.start_time
+            self.execution_time_text.setPlainText(f"{elapsed_time:.2f}")
+
+    def return_to_main(self):
+        # Cierra la ventana y regresa a la interfaz principal
+        self.close()
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
         layout.addWidget(self.reset_button)
@@ -245,7 +433,6 @@ class CPUWindow(QMainWindow):
             (processor_type, self.cpu.PC, current_time, latency_ms))
         self.execution_times.append(current_time)
         self.history_table.resizeColumnsToContents()
-
         if len(self.execution_history) > 5:
             self.execution_history.pop(0)
             self.execution_times.pop(0)
@@ -258,4 +445,3 @@ if __name__ == '__main__':
     window = CPUWindow()
     window.show()
     sys.exit(app.exec_())
-
