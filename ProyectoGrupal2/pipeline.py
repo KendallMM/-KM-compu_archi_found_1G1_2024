@@ -144,4 +144,3 @@ class SegmentedPipelineCPU(QThread):
         for j in range(instruction_count, len(self.memory)):
             self.data_memory[j - instruction_count] = self.memory[j]
         return instruction_count
-

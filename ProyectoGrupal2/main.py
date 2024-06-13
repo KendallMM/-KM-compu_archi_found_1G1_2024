@@ -2,7 +2,6 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QLabel, QWidget, QComboBox, QTextEdit, QTableWidget, \
     QTableWidgetItem, QHBoxLayout, QSpinBox, QMessageBox, QGridLayout, QSizePolicy
-
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap
 from multiciclo import MultiCycleCPU
@@ -11,56 +10,39 @@ import time
 from pipeline import SegmentedPipelineCPU
 from uniciclo import UniCycleCPU
 
-
 class CPUWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("CPU Simulator")
-        self.setFixedSize(1030, 715)
-        self.prevCpu = None
-        self.cpu = MultiCycleCPU()
-        self.cpu.messageChanged.connect(self.update_output)
+        self.setFixedSize(600, 400)
+
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         layout = QVBoxLayout()
         self.central_widget.setLayout(layout)
 
-        # ComboBox para seleccionar el tipo de procesador
-        self.processor_combo = QComboBox(self)
-        self.processor_combo.addItems(["Multiciclo", "Uniciclo"])
-        layout.addWidget(self.processor_combo)
-        # SpinBox para seleccionar el delay en centisegundos
-        delay_layout = QHBoxLayout()
-        self.delay_label = QLabel("Delay (ms):")
-        delay_layout.addWidget(self.delay_label)
-        self.delay_spinbox = QSpinBox(self)
-        self.delay_spinbox.setRange(0, 1000)  # Rango de 0 a 1 segundo en centisegundos
-        self.delay_spinbox.setValue(300)  # Valor por defecto: 0.1 segundo (10 centisegundos)
-        delay_layout.addWidget(self.delay_spinbox)
-        layout.addLayout(delay_layout)
+        # Botón para seleccionar el tipo de interfaz de Uniciclo y Multiciclo
+        self.gen_button = QPushButton("Interfaz de Uniciclo y Multiciclo")
+        self.gen_button.clicked.connect(self.show_gen_simulation)
+        layout.addWidget(self.gen_button)
 
-        # SpinBox para seleccionar la cantidad de datos a mostrar de self.cpu.data_memory
-        data_layout = QHBoxLayout()
-        self.data_label = QLabel("Data Memory Size:")
-        data_layout.addWidget(self.data_label)
-        self.data_spinbox = QSpinBox(self)
-        self.data_spinbox.setRange(0, 1024)  # Rango de 0 a 1024 (tamaño máximo de la memoria de datos)
-        self.data_spinbox.setValue(27)  # Valor por defecto: 10 datos
-        data_layout.addWidget(self.data_spinbox)
-        layout.addLayout(data_layout)
+        # Botón para cambiar a la interfaz de pipeline
+        self.pipeline_button = QPushButton("Interfaz de Pipeline")
+        self.pipeline_button.clicked.connect(self.show_pipeline_interface)
+        layout.addWidget(self.pipeline_button)
 
-        # Botones para controlar la ejecución
-        self.start_button = QPushButton("Start Simulation")
-        self.start_button.clicked.connect(self.start_simulation)
-        layout.addWidget(self.start_button)
-        self.stop_button = QPushButton("Stop Simulation")
-        self.stop_button.clicked.connect(self.stop_simulation)
-        self.stop_button.setEnabled(False)
-        layout.addWidget(self.stop_button)
+        self.gen_window = None
+        self.pipeline_window = None
 
-        self.step_button = QPushButton("Step-by-Step Execution")
-        self.step_button.clicked.connect(self.run_step)
-        layout.addWidget(self.step_button)
+    def show_gen_simulation(self):
+        if self.gen_window is None:
+            self.gen_window = GenWindow()
+        self.gen_window.show()
+        
+    def show_pipeline_interface(self):
+        if self.pipeline_window is None:
+            self.pipeline_window = PipelineWindow()
+        self.pipeline_window.show()
 
 class PipelineWindow(QMainWindow):
     def __init__(self):
@@ -248,6 +230,62 @@ class PipelineWindow(QMainWindow):
     def return_to_main(self):
         # Cierra la ventana y regresa a la interfaz principal
         self.close()
+
+
+
+
+class GenWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("CPU Simulator")
+        self.setFixedSize(1030, 715)
+        self.prevCpu = None
+        self.cpu = MultiCycleCPU()
+        self.cpu.messageChanged.connect(self.update_output)
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout()
+        self.central_widget.setLayout(layout)
+
+        # ComboBox para seleccionar el tipo de procesador
+        self.processor_combo = QComboBox(self)
+        self.processor_combo.addItems(["Multiciclo", "Uniciclo"])
+        layout.addWidget(self.processor_combo)
+
+        # SpinBox para seleccionar el delay en centisegundos
+        delay_layout = QHBoxLayout()
+        self.delay_label = QLabel("Delay (ms):")
+        delay_layout.addWidget(self.delay_label)
+        self.delay_spinbox = QSpinBox(self)
+        self.delay_spinbox.setRange(0, 1000)  # Rango de 0 a 1 segundo en centisegundos
+        self.delay_spinbox.setValue(300)  # Valor por defecto: 0.1 segundo (10 centisegundos)
+        delay_layout.addWidget(self.delay_spinbox)
+        layout.addLayout(delay_layout)
+
+        # SpinBox para seleccionar la cantidad de datos a mostrar de self.cpu.data_memory
+        data_layout = QHBoxLayout()
+        self.data_label = QLabel("Data Memory Size:")
+        data_layout.addWidget(self.data_label)
+        self.data_spinbox = QSpinBox(self)
+        self.data_spinbox.setRange(0, 1024)  # Rango de 0 a 1024 (tamaño máximo de la memoria de datos)
+        self.data_spinbox.setValue(27)  # Valor por defecto: 10 datos
+        data_layout.addWidget(self.data_spinbox)
+        layout.addLayout(data_layout)
+
+        # Botones para controlar la ejecución
+        self.start_button = QPushButton("Start Simulation")
+        self.start_button.clicked.connect(self.start_simulation)
+        layout.addWidget(self.start_button)
+
+        self.stop_button = QPushButton("Stop Simulation")
+        self.stop_button.clicked.connect(self.stop_simulation)
+        self.stop_button.setEnabled(False)
+        layout.addWidget(self.stop_button)
+
+        self.step_button = QPushButton("Step-by-Step Execution")
+        self.step_button.clicked.connect(self.run_step)
+        layout.addWidget(self.step_button)
+
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
         layout.addWidget(self.reset_button)
@@ -433,12 +471,11 @@ class PipelineWindow(QMainWindow):
             (processor_type, self.cpu.PC, current_time, latency_ms))
         self.execution_times.append(current_time)
         self.history_table.resizeColumnsToContents()
+
         if len(self.execution_history) > 5:
             self.execution_history.pop(0)
             self.execution_times.pop(0)
             self.history_table.removeRow(0)
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
